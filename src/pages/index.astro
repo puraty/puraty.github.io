@@ -1,17 +1,164 @@
 ---
+// デザイン再現版
+const name_ja = "ぷらてぃ";
+const name_en = "Puraty";
 
+const sns_links = [
+  { name: "GitHub", url: "https://github.com/puraty", icon: "github" },
+  { name: "Facebook", url: "https://www.facebook.com/takahiro.suzuki.351104", icon: "facebook" },
+  { name: "X", url: "https://x.com/ganma_shigeru", icon: "x" },
+  { name: "LinkedIn", url: "#", icon: "linkedin" },
+  { name: "Amazon", url: "#", icon: "amazon" },
+  { name: "Email", url: "#", icon: "mail" },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{name_ja} | {name_en}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background-color: #0c0c0c; /* 暗い背景 */
+        color: #fff;
+        font-family: 'Inter', 'Helvetica Neue', sans-serif;
+        overflow: hidden; /* スクロール禁止 */
+      }
+
+      /* パーティクルを描画するキャンバス */
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      main {
+        position: relative;
+        z-index: 10;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 10%; /* 画像のような少し左寄せの配置 */
+      }
+
+      h1 {
+        font-size: 3rem;
+        margin: 0;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+      }
+
+      .name-en {
+        font-size: 1.5rem;
+        margin-top: 0.5rem;
+        letter-spacing: 0.1em;
+        color: #eee;
+        font-weight: 300;
+      }
+
+      .icons {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .icons a {
+        color: #fff;
+        font-size: 1.4rem;
+        text-decoration: none;
+        transition: opacity 0.3s;
+      }
+
+      .icons a:hover {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="particleCanvas"></canvas>
+
+    <main>
+      <h1>{name_ja}</h1>
+      <div class="name-en">{name_en}</div>
+      
+      <div class="icons">
+  {sns_links.map(link => (
+    <a href={link.url} target="_blank" rel="noopener noreferrer">
+      {/* link.nameがGitHubやFacebookの場合は fa-brands、
+          Email（mail）の場合は fa-solid を使うように分岐させています 
+      */}
+      <i class={link.icon === "mail" ? `fa-solid fa-envelope` : `fa-brands fa-${link.icon === 'x' ? 'x-twitter' : link.icon}`}></i>
+    </a>
+  ))}
+</div>
+    </main>
+
+    <script>
+      // シンプルなパーティクル描画スクリプト
+      const canvas = document.getElementById('particleCanvas') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d')!;
+      let particles: any[] = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      class Particle {
+        x: number; y: number; size: number; color: string; speedX: number; speedY: number;
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 8 + 1;
+          const colors = ['#4ade80', '#60a5fa', '#a78bfa', '#fb7185', '#fbbf24']; // 画像のような多色
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = (Math.random() - 0.5) * 0.5;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          if (this.x > canvas.width) this.x = 0;
+          if (this.x < 0) this.x = canvas.width;
+          if (this.y > canvas.height) this.y = 0;
+          if (this.y < 0) this.y = canvas.height;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.globalAlpha = 0.6;
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particles = [];
+        for (let i = 0; i < 50; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      init();
+      animate();
+    </script>
+  </body>
 </html>
